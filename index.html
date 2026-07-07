@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>El GT3 RS o esto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000;
+    --white:#fff;
+    --red:#e10600;
+    --dim:#555;
+    --line:#181818;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Space Mono',monospace;
+    min-height:100dvh;
+    position:relative;
+  }
+
+  .screen{
+    position:fixed;inset:0;
+    display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top) + 3rem) 1.6rem calc(env(safe-area-inset-bottom) + 2rem);
+    opacity:0;visibility:hidden;
+    transition:opacity 0.5s ease, visibility 0.5s;
+  }
+  .screen.active{opacity:1;visibility:visible;}
+
+  /* ---------- PANTALLA 1: LA ELECCIÓN ---------- */
+  #choice{justify-content:space-between;}
+
+  .eyebrow{
+    font-size:0.7rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--dim);
+    opacity:0;animation:fadeDown 0.7s ease 0.1s forwards;
+  }
+
+  .headline{
+    flex:1;display:flex;align-items:center;
+  }
+  .headline h1{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:clamp(3.6rem,19vw,7rem);
+    line-height:0.92;
+    text-transform:uppercase;
+    letter-spacing:-0.01em;
+  }
+  .headline .l1{display:block;opacity:0;animation:slideIn 0.6s cubic-bezier(.2,.8,.2,1) 0.35s forwards;}
+  .headline .l2{display:block;color:var(--red);opacity:0;animation:slideIn 0.6s cubic-bezier(.2,.8,.2,1) 0.5s forwards;}
+  .headline .l3{
+    display:block;font-size:0.34em;color:var(--dim);letter-spacing:0.02em;margin-top:0.4em;
+    opacity:0;animation:slideIn 0.6s cubic-bezier(.2,.8,.2,1) 0.68s forwards;
+  }
+  .headline .l3 s{color:var(--dim);}
+
+  .bottom{opacity:0;animation:fadeUp 0.7s ease 0.85s forwards;}
+  .toll{
+    display:flex;justify-content:space-between;align-items:baseline;
+    border-top:1px solid var(--line);padding-top:1rem;margin-bottom:1.3rem;
+    font-size:0.78rem;color:var(--dim);
+  }
+  .toll b{color:var(--white);font-weight:700;}
+
+  .btns{display:flex;flex-direction:column;gap:0.7rem;}
+  button{
+    font-family:'Space Mono',monospace;font-size:0.9rem;font-weight:700;
+    letter-spacing:0.02em;padding:1.2rem 1.3rem;border:none;border-radius:2px;
+    cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;
+    transition:transform 0.1s ease;
+  }
+  button:active{transform:scale(0.97);}
+  .stay{background:var(--white);color:#000;}
+  .go{background:transparent;color:var(--dim);border:1px solid var(--line);font-weight:400;}
+
+  .streak{
+    text-align:center;font-size:0.68rem;letter-spacing:0.15em;color:var(--dim);margin-top:1rem;
+  }
+  .streak b{color:var(--red);}
+
+  /* ---------- PANTALLA 2: TE QUEDASTE (VICTORIA) ---------- */
+  #kept{justify-content:center;align-items:center;text-align:center;gap:1.4rem;}
+  #kept .big{
+    font-family:'Anton',sans-serif;font-size:clamp(3rem,15vw,5.5rem);text-transform:uppercase;
+    line-height:0.95;color:var(--white);
+  }
+  #kept .big .accent{color:var(--red);display:block;}
+  #kept .sub{font-size:0.8rem;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;}
+  #kept .streakbig{font-size:0.75rem;letter-spacing:0.2em;color:var(--dim);margin-top:0.5rem;}
+  #kept .streakbig b{color:var(--red);font-size:1.6rem;font-family:'Anton';display:block;margin-top:0.3rem;}
+
+  /* animación de entrada de la pantalla victoria */
+  .pop .big{animation:pop 0.55s cubic-bezier(.2,1.3,.4,1) forwards;}
+  .pop .sub, .pop .streakbig{opacity:0;animation:fadeUp 0.6s ease 0.35s forwards;}
+
+  /* ---------- PANTALLA 3: CEDISTE ---------- */
+  #gave{justify-content:center;align-items:center;text-align:center;gap:1.2rem;}
+  #gave .big{font-family:'Anton',sans-serif;font-size:clamp(2.4rem,11vw,4rem);text-transform:uppercase;color:var(--dim);line-height:0.95;}
+  #gave .sub{font-size:0.78rem;letter-spacing:0.12em;color:var(--dim);}
+  #gave .again{
+    margin-top:1.5rem;background:transparent;color:var(--white);border:1px solid var(--line);
+    display:inline-flex;padding:0.9rem 1.6rem;font-size:0.8rem;border-radius:2px;cursor:pointer;
+  }
+  .pop2 .big{animation:pop 0.5s ease forwards;}
+  .pop2 .sub,.pop2 .again{opacity:0;animation:fadeUp 0.6s ease 0.3s forwards;}
+
+  /* pulso rojo ambiente detrás de todo */
+  .pulse{
+    position:fixed;top:-25%;left:50%;width:120vw;height:120vw;transform:translateX(-50%);
+    background:radial-gradient(circle, rgba(225,6,0,0.13) 0%, rgba(0,0,0,0) 58%);
+    animation:breathe 8s ease-in-out infinite;pointer-events:none;z-index:0;
+  }
+  .screen{z-index:1;}
+
+  @keyframes breathe{0%,100%{opacity:0.35;transform:translateX(-50%) scale(0.9);}50%{opacity:0.9;transform:translateX(-50%) scale(1.06);}}
+  @keyframes slideIn{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pop{0%{opacity:0;transform:scale(0.8);}100%{opacity:1;transform:scale(1);}}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:0.01ms !important;}.pulse{animation:none;opacity:0.4;}}
+</style>
+</head>
+<body>
+<div class="pulse"></div>
+
+<!-- PANTALLA 1 -->
+<div class="screen active" id="choice">
+  <div class="eyebrow" id="greeting">Antes de entrar</div>
+  <div class="headline">
+    <h1>
+      <span class="l1">El GT3&nbsp;RS</span>
+      <span class="l2">o esto.</span>
+      <span class="l3" id="wanttext">lo que construyes, o lo que te distrae</span>
+    </h1>
+  </div>
+  <div class="bottom">
+    <div class="toll">
+      <span id="tolltext">HOY HAS CEDIDO</span><b id="today">— veces</b>
+    </div>
+    <div class="btns">
+      <button class="stay" onclick="stay()"><span>Seguir construyendo</span><span>→</span></button>
+      <button class="go" onclick="gave()"><span>Tirar los próximos minutos</span><span>↓</span></button>
+    </div>
+    <div class="streak">RACHA · <b id="streak">0</b> DÍAS ELIGIENDO BIEN</div>
+  </div>
+</div>
+
+<!-- PANTALLA 2: victoria -->
+<div class="screen" id="kept">
+  <div class="big" id="keptbig">BIEN.<span class="accent" id="keptaccent"></span></div>
+  <div class="sub">cierra y ve a por ello</div>
+  <div class="streakbig">RACHA<b id="streak2">0</b></div>
+</div>
+
+<!-- PANTALLA 3: cediste -->
+<div class="screen" id="gave">
+  <div class="big">elegiste<br>el scroll</div>
+  <div class="sub">al menos con los ojos abiertos</div>
+  <button class="again" onclick="back()">volver · elegir otra vez</button>
+</div>
+
+<script>
+  const MI_FRASE = "El GT3&nbsp;RS"; // primera línea
+  const hoy = new Date().toDateString();
+  let d = JSON.parse(localStorage.getItem('respiro')||'{}');
+  if (d.dia !== hoy){ d = { dia:hoy, cedido:0, racha:(d.racha||0), buenaHoy:false }; localStorage.setItem('respiro',JSON.stringify(d)); }
+
+  // saludo por hora
+  const h=new Date().getHours(), g=document.getElementById('greeting');
+  if(h<6)g.textContent="Son las tantas.";else if(h<13)g.textContent="Buenos días.";else if(h<21)g.textContent="Antes de entrar";else g.textContent="De noche. Piénsalo.";
+
+  document.getElementById('today').textContent = d.cedido>0 ? (d.cedido+(d.cedido===1?" vez":" veces")) : "aún nada";
+  document.getElementById('streak').textContent = d.racha||0;
+
+  function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+  function stay(){
+    if(!d.buenaHoy){ d.buenaHoy=true; d.racha=(d.racha||0)+1; }
+    localStorage.setItem('respiro',JSON.stringify(d));
+    const wins=["BIEN.","ESO ES.","HOY GANAS TÚ.","DISCIPLINA."];
+    document.getElementById('keptbig').firstChild.textContent = wins[Math.floor(Math.random()*wins.length)];
+    document.getElementById('streak2').textContent = d.racha||0;
+    const k=document.getElementById('kept'); k.classList.add('pop');
+    show('kept'); void k.offsetWidth;
+  }
+  function gave(){
+    d.cedido=(d.cedido||0)+1; d.buenaHoy=false;
+    localStorage.setItem('respiro',JSON.stringify(d));
+    const g=document.getElementById('gave'); g.classList.add('pop2');
+    show('gave');
+    // en el iPhone, aquí el atajo abriría TikTok de verdad
+  }
+  function back(){ document.getElementById('today').textContent=(d.cedido)+(d.cedido===1?" vez":" veces"); show('choice'); }
+</script>
+</body>
+</html>
